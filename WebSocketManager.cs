@@ -20,10 +20,16 @@ namespace StreamerBotApp
 		/// <returns>Json Formated Response String</returns>
 		public async Task<string> ReceiveData()
 		{
+<<<<<<< HEAD
 			//Allocate 4096 bytes to be used as the response buffer and prepear the output variable
 			byte[] responseBuffer = ArrayPool<byte>.Shared.Rent(4096);
 			string msg = "";
 			while (_webSocketClient.State == WebSocketState.Open)
+=======
+			WebSocketReceiveResult response = await _webSocketClient.ReceiveAsync(responseBuffer, new());
+			msg += Encoding.UTF8.GetString(responseBuffer, 0, response.Count);
+			if (response.EndOfMessage == true)
+>>>>>>> d0cbab7ad91ffb39eee5036778014c8a95d4baf5
 			{
 				//While the websocket is open, receive the response in 4096 byte sections, decoding and adding them
 				//to the output
