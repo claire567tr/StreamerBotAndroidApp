@@ -24,7 +24,7 @@ public partial class WebSocketManager : Node
 		while (_webSocketClient.State == WebSocketState.Open)
 		{
 			WebSocketReceiveResult response = await _webSocketClient.ReceiveAsync(responseBuffer, new());
-			msg = Encoding.UTF8.GetString(responseBuffer, 0, response.Count);
+			msg += Encoding.UTF8.GetString(responseBuffer, 0, response.Count);
 			if (response.EndOfMessage == true)
 			{
 				break;
