@@ -1,62 +1,66 @@
 using Godot;
 using System;
 
-public partial class PopulateActions : Node
+namespace StreamerBotApp
 {
-    // Called when the node enters the scene tree for the first time.
-    WebSocketManager manager;
-    int HorizontalOffset = 1;
-    int VerticalOffset = 0;
-    int MaxHorizontalOffset;
-    public override void _Ready()
+    public partial class PopulateActions : Node
     {
-        manager = GetNode<WebSocketManager>("/root/Control/Manager");
-        float offset = GetWindow().Size.X / 136;
-        MaxHorizontalOffset = (int)MathF.Floor(offset);
-    }
+        WebSocketManager _WebsocketManager;
+        int _HorizontalOffset = 1;
+        int _VerticalOffset = 0;
+        int _MaxHorizontalOffset;
+        public override void _Ready()
+        {
+            _WebsocketManager = GetNode<WebSocketManager>("/root/Control/Manager");
 
-   public void CreateActionButtons()
-    {
-        foreach(ActionData action in manager.actions)
-        { 
-            Button newButton = new();
-            AddChild(newButton);
+            //Calculate how many buttons can fit across the screen at most
+            //TODO: Implement vertical with scrolling for more buttons
+            _MaxHorizontalOffset = (int)MathF.Floor(GetWindow().Size.X / 136);
+        }
 
-            DoActionRequestRoot request = new(action);
-
-            Label label = new();
-            newButton.AddChild(label);
-            label.AutowrapMode = TextServer.AutowrapMode.Word;
-            label.Text = action.name;
-            label.HorizontalAlignment = HorizontalAlignment.Center;
-            label.Size = new Vector2(136, 136);
-            //GD.Print(label.Size.X);
-
-
-            //label.Position = new Vector2((136 - label.Size.X) / 2, 0);
-            newButton.Icon = GD.Load<Texture2D>("res://icon.svg");
-
-
-            ButtonData buttonData = new();
-            newButton.AddChild(buttonData);
-            ulong id = buttonData.GetInstanceId();
-            buttonData.SetScript(GD.Load<CSharpScript>("res://ButtonData.cs"));
-            ButtonData button = (ButtonData)InstanceFromId(id);
-            
-            button.request = request.ToString();
-            //GD.Print(button.request);
-            newButton.ButtonUp += button.DoAction;
-
-
-            newButton.Position = newButton.Position + new Vector2(136 * HorizontalOffset, VerticalOffset);
-            HorizontalOffset += 1;
-            if(HorizontalOffset == MaxHorizontalOffset)
+        public void CreateActionButtons()
+        {
+            foreach (ActionData action in _WebsocketManager.actions)
             {
-                HorizontalOffset = 0;
-                VerticalOffset += 136;
+
+                //Create a new button as a child of the Root Node.
+                Button newButton = new();
+                AddChild(newButton);
+
+                //Create a Label as a Child of the New Button and set it up
+                Label label = new();
+                newButton.AddChild(label);
+                label.AutowrapMode = TextServer.AutowrapMode.Word;
+                label.Text = action.name;
+                label.HorizontalAlignment = HorizontalAlignment.Center;
+                label.Size = new Vector2(136, 136);
+                newButton.Icon = GD.Load<Texture2D>("res://icon.svg");
+
+                //Create an empty node with the ButtonData Script attached as a Child of the New Button
+                ButtonData buttonData = new();
+                newButton.AddChild(buttonData);
+                ulong id = buttonData.GetInstanceId();
+                buttonData.SetScript(GD.Load<CSharpScript>("res://ButtonData.cs"));
+                ButtonData button = (ButtonData)InstanceFromId(id);
+
+                //Set the JSON Request string in the newly create ButtonData based on the Action Details from Streamer.Bot
+                //and set the button to call the action when pressed.
+                DoActionRequestRoot request = new(action);
+                button.Request = request.ToString();
+                newButton.ButtonUp += button.DoAction;
+
+                //Move the new button to the next available spot on the grid
+                //Determined based on the assumed size of the button being 136px x 136px
+                //TODO: Make work dynamically with icon size
+                newButton.Position = newButton.Position + new Vector2(136 * _HorizontalOffset, _VerticalOffset);
+                _HorizontalOffset += 1;
+                if (_HorizontalOffset == _MaxHorizontalOffset)
+                {
+                    _HorizontalOffset = 0;
+                    _VerticalOffset += 136;
+                }
+
             }
-            //tmp.ButtonUp += button.DoAction;
-            
         }
     }
 }

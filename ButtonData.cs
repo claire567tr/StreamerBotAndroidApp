@@ -1,19 +1,37 @@
 using Godot;
 using System;
 
-public partial class ButtonData : Node
+namespace StreamerBotApp
 {
-    public string request = "";
-    WebSocketManager manager;
-
-    public override void _Ready()
+    public partial class ButtonData : Node
     {
-        manager = GetNode<WebSocketManager>("/root/Control/Manager");
-    }
+        /// <summary>
+        /// The JSON Formatted request to be sent to Streamer.Bot for the action.
+        /// </summary>
+        public string Request
+        {
+            get
+            {
+                return _Request;
+            }
+            set
+            {
+                _Request = value;
+            }
+        }
 
-    public async void DoAction()
-    {
-        await manager.SendRequestAndReceiveResponse(request);
+        private string _Request = "";
+        WebSocketManager _WebsocketManager;
 
+        public override void _Ready()
+        {
+            _WebsocketManager = GetNode<WebSocketManager>("/root/Control/Manager");
+        }
+
+        public async void DoAction()
+        {
+            await _WebsocketManager.SendRequestAndReceiveResponse(Request);
+
+        }
     }
 }
